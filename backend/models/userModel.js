@@ -1,13 +1,23 @@
-const db = require('../config');
+const poolPromise = require('../config');
 
-const createUser = (userData, callback) => {
-    const query = 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)';
-    db.query(query, [userData.name, userData.email, userData.password, userData.role], callback);
+// Get user by email
+const getUserByEmail = async (email) => {
+    const pool = await poolPromise;
+    const result = await pool.request()
+        .input('email', sql.NVarChar, email)
+        .query('SELECT * FROM users WHERE email = @email');
+    return result.recordset[0]; // Return the first user found (if any)
 };
 
-const getUserByEmail = (email, callback) => {
-    const query = 'SELECT * FROM users WHERE email = ?';
-    db.query(query, [email], callback);
+// Create new user
+const createUser = async (user) => {
+    const pool = await poolPromise;
+    const result = await pool.request()
+        .input('name', sql.NVarChar, user.name)
+        .input('email', sql.NVarChar, user.email)
+        .input('password', sql.NVarChar, user.password)
+        .query('INSERT INTO users (name, email, password) VALUES (@name, @email, @password)');
+    return result.rowsAffected[0]; // Return the number of affected rows
 };
 
-module.exports = { createUser, getUserByEmail };
+module.exports = { getUserByEmail, createUser };

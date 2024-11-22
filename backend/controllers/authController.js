@@ -1,37 +1,20 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const db = require('../config');
+const userModel = require('../models/userModel');
 
-const login = (req, res) => {
-    const { email, password } = req.body;
+// Register user
+const registerUser = async (req, res) => {
+    const { name, email, password } = req.body;
+    try {
+        const existingUser = await userModel.getUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-    const query = 'SELECT * FROM users WHERE email = ?';
-    db.query(query, [email], (err, results) => {
-        if (err) return res.status(500).send(err);
-        if (!results.length) return res.status(401).send('User not found');
-
-        const user = results[0];
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-            if (isMatch) {
-                const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key');
-                res.send({ token, user });
-            } else {
-                res.status(401).send('Invalid credentials');
-            }
-        });
-    });
+        const result = await userModel.createUser({ name, email, password });
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 };
 
-const signup = (req, res) => {
-    const { name, email, password, role } = req.body;
-
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-        const query = 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)';
-        db.query(query, [name, email, hashedPassword, role], (err, results) => {
-            if (err) return res.status(500).send(err);
-            res.send('User registered successfully');
-        });
-    });
-};
-
-module.exports = { login, signup };
+module.exports = { registerUser };
