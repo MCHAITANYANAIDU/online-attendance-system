@@ -1,43 +1,46 @@
- import React, { useState } from 'react';
-
-import axios from '../services/api';
+// Login.jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+// import { useHistory } from 'react-router-dom';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+//   const history = useHistory();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('/auth/login', { email, password });
-            alert('Login Successful!');
-            localStorage.setItem('token', response.data.token);
-            window.location.href = '/dashboard';
-        } catch (error) {
-            alert('Login Failed: ' + error.response.data);
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5000/login', { email, password });
+      localStorage.setItem('token', response.data.token);  // Save token to localStorage
+      history.push('/dashboard');
+    } catch (err) {
+      setError('Login failed. Please try again.');
+    }
+  };
 
-    return (
-        <div className="login">
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
-            </form>
-        </div>
-    );
+  return (
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="email" 
+          placeholder="Email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+        <button type="submit">Login</button>
+      </form>
+      {error && <p>{error}</p>}
+    </div>
+  );
 };
 
 export default Login;

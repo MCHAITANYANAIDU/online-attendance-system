@@ -1,13 +1,11 @@
+// routes/attendanceRoutes.js
 const express = require('express');
-const {
-    markAttendance,
-    getUserAttendance,
-    getAttendanceSummary,
-} = require('../controllers/attendanceController');
+const { postAttendance } = require('../controllers/attendanceController');
+const isAdmin = require('../middleware/adminMiddleware');
+
 const router = express.Router();
 
-router.post('/mark', markAttendance);
-router.get('/user/:userId', getUserAttendance);
-router.get('/summary', getAttendanceSummary);
+// POST attendance (only accessible to admins)
+router.post('/attendance', isAdmin, postAttendance);
 
 module.exports = router;
